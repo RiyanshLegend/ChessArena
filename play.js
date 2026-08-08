@@ -1,25 +1,16 @@
 "use strict";
 
-/* ================================
-   CHESS GAME
-================================ */
-
 const game = new Chess();
 
-const boardElement = document.getElementById("board");
-const statusElement = document.getElementById("status");
-const historyElement = document.getElementById("moveHistory");
+const board = document.getElementById("board");
+const status = document.getElementById("status");
+const history = document.getElementById("moveHistory");
 
-const newGameButton = document.getElementById("newGame");
-const resignButton = document.getElementById("resign");
+const newGame = document.getElementById("newGame");
+const resign = document.getElementById("resign");
 
 let selectedSquare = null;
-let thinking = false;
-
-
-/* ================================
-   PIECES
-================================ */
+let gameOver = false;
 
 const pieces = {
     wK: "♔",
@@ -28,7 +19,6 @@ const pieces = {
     wB: "♗",
     wN: "♘",
     wP: "♙",
-
     bK: "♚",
     bQ: "♛",
     bR: "♜",
@@ -37,127 +27,49 @@ const pieces = {
     bP: "♟"
 };
 
-
-/* ================================
-   STOCKFISH
-================================ */
-
-let engine;
-
-try {
-
-    engine = new Worker("stockfish-18-lite-single.js");
-
-    engine.postMessage("uci");
-
-    engine.onmessage = function(event) {
-
-        const message = event.data;
-
-        console.log("MAGNUS:", message);
-
-        if (typeof message !== "string") return;
-
-        if (message.startsWith("bestmove")) {
-
-            const parts = message.split(" ");
-            const bestMove = parts[1];
-
-            if (bestMove && bestMove !== "(none)") {
-                playMagnusMove(bestMove);
-            }
-
-        }
-
-    };
-
-} catch (error) {
-
-    console.error("Stockfish failed to load:", error);
-
-    statusElement.textContent = "MAGNUS ENGINE FAILED TO LOAD";
-
-}
-
-
-/* ================================
-   CREATE BOARD
-================================ */
-
-function createBoard() {
-
-    boardElement.innerHTML = "";
+function drawBoard() {
+    board.innerHTML = "";
 
     const position = game.board();
 
     for (let row = 0; row < 8; row++) {
-
         for (let col = 0; col < 8; col++) {
 
             const square = document.createElement("div");
 
-            const isLight = (row + col) % 2 === 0;
+            square.className =
+                (row + col) % 2 === 0
+                    ? "square light"
+                    : "square dark";
 
-            square.className = isLight
-                ? "square light"
-                : "square dark";
+            const name =
+                String.fromCharCode(97 + col) + (8 - row);
 
-            const file = String.fromCharCode(97 + col);
-            const rank = 8 - row;
-
-            const squareName = file + rank;
-
-            square.dataset.square = squareName;
+            square.dataset.square = name;
 
             const piece = position[row][col];
 
             if (piece) {
-
                 const pieceElement = document.createElement("span");
 
-                const key =
-                    piece.color +
-                    piece.type.toUpperCase();
+                pieceElement.className = "piece";
 
-                pieceElement.textContent = pieces[key];
-
-                pieceElement.className =
-                    piece.color === "w"
-                        ? "piece white-piece"
-                        : "piece black-piece";
+                pieceElement.textContent =
+                    pieces[piece.color + piece.type.toUpperCase()];
 
                 square.appendChild(pieceElement);
-
             }
 
-            square.addEventListener(
-                "click",
-                () => handleSquareClick(squareName)
-            );
+            square.addEventListener("click", () => clickSquare(name));
 
-            boardElement.appendChild(square);
-
+            board.appendChild(square);
         }
-
     }
-
 }
 
+function clickSquare(square) {
 
-/* ================================
-   PLAYER MOVE
-================================ */
-
-function handleSquareClick(square) {
-
-    if (thinking) return;
-
-    if (game.isGameOver()) return;
-
-    if (game.turn() !== "w") return;
-
-
-    /* Select a piece */
+    if (gameOver) return;
 
     if (!selectedSquare) {
 
@@ -167,327 +79,98 @@ function handleSquareClick(square) {
 
         selectedSquare = square;
 
-        highlightSquare(square);
+        document
+            .querySelector(`[data-square="${square}"]`)
+            .classList.add("selected");
 
         return;
     }
 
-
-    /* Try move */
-
     const move = game.move({
-
         from: selectedSquare,
         to: square,
         promotion: "q"
-
     });
-
-
-    /* Illegal move */
-
-    if (!move) {
-
-        selectedSquare = null;
-
-        createBoard();
-
-        return;
-    }
-
 
     selectedSquare = null;
 
-    createBoard();
-
-    updateHistory();
-
-    updateStatus();
-
-
-    /* Check game end */
-
-    if (game.isGameOver()) {
-
-        finishGame();
-
-        return;
-    }
-
-
-    /* Magnus thinks */
-
-    magnusMove();
-
-}
-
-
-/* ================================
-   HIGHLIGHT
-================================ */
-
-function highlightSquare(square) {
-
-    const element =
-        document.querySelector(
-            `[data-square="${square}"]`
-        );
-
-    if (element) {
-
-        element.classList.add("selected");
-
-    }
-
-}
-
-
-/* ================================
-   MAGNUS THINKS
-================================ */
-
-function magnusMove() {
-
-    thinking = true;
-
-    statusElement.textContent =
-        "👑 MAGNUS IS THINKING...";
-
-    const fen = game.fen();
-
-    engine.postMessage("position fen " + fen);
-
-    /*
-       High search depth.
-       The lite engine is still extremely strong.
-    */
-
-    engine.postMessage("go depth 30");
-
-}
-
-
-/* ================================
-   MAGNUS MOVE
-================================ */
-
-function playMagnusMove(uciMove) {
-
-    if (!thinking) return;
-
-
-    const from = uciMove.substring(0, 2);
-    const to = uciMove.substring(2, 4);
-
-    let promotion = "q";
-
-    if (uciMove.length >= 5) {
-        promotion = uciMove.substring(4, 5);
-    }
-
-
-    const move = game.move({
-
-        from: from,
-        to: to,
-        promotion: promotion
-
-    });
-
-
     if (!move) {
-
-        console.error(
-            "Magnus produced an invalid move:",
-            uciMove
-        );
-
-        thinking = false;
-
+        drawBoard();
         return;
     }
 
-
-    thinking = false;
-
-    createBoard();
-
+    drawBoard();
     updateHistory();
 
-    updateStatus();
-
+    status.textContent = "MOVE PLAYED";
 
     if (game.isGameOver()) {
-
         finishGame();
-
-    } else {
-
-        statusElement.textContent =
-            "YOUR MOVE";
-
     }
-
 }
-
-
-/* ================================
-   MOVE HISTORY
-================================ */
 
 function updateHistory() {
 
     const moves = game.history();
 
-    if (moves.length === 0) {
-
-        historyElement.textContent =
-            "No moves yet.";
-
+    if (!moves.length) {
+        history.textContent = "No moves yet.";
         return;
     }
 
-
-    historyElement.innerHTML = "";
-
+    history.innerHTML = "";
 
     for (let i = 0; i < moves.length; i += 2) {
 
         const row = document.createElement("div");
 
-        const moveNumber =
-            Math.floor(i / 2) + 1;
-
-        const whiteMove =
-            moves[i] || "";
-
-        const blackMove =
-            moves[i + 1] || "";
-
         row.textContent =
-            `${moveNumber}. ${whiteMove} ${blackMove}`;
+            `${Math.floor(i / 2) + 1}. ${moves[i] || ""} ${moves[i + 1] || ""}`;
 
-        historyElement.appendChild(row);
-
+        history.appendChild(row);
     }
-
 }
-
-
-/* ================================
-   STATUS
-================================ */
-
-function updateStatus() {
-
-    if (game.isCheck()) {
-
-        statusElement.textContent =
-            "⚔️ CHECK!";
-
-        return;
-    }
-
-    statusElement.textContent =
-        "YOUR MOVE";
-
-}
-
-
-/* ================================
-   GAME OVER
-================================ */
 
 function finishGame() {
 
-    thinking = false;
+    gameOver = true;
 
     if (game.isCheckmate()) {
-
-        if (game.turn() === "w") {
-
-            statusElement.textContent =
-                "👑 CHECKMATE — MAGNUS WINS";
-
-        } else {
-
-            statusElement.textContent =
-                "🏆 YOU BEAT MAGNUS!";
-
-        }
-
-        return;
+        status.textContent =
+            game.turn() === "w"
+                ? "CHECKMATE"
+                : "YOU WIN!";
     }
-
-
-    if (game.isDraw()) {
-
-        statusElement.textContent =
-            "DRAW";
-
-        return;
+    else if (game.isDraw()) {
+        status.textContent = "DRAW";
     }
-
-
-    statusElement.textContent =
-        "GAME OVER";
-
+    else {
+        status.textContent = "GAME OVER";
+    }
 }
 
+newGame.addEventListener("click", () => {
 
-/* ================================
-   NEW GAME
-================================ */
+    game.reset();
 
-newGameButton.addEventListener(
-    "click",
-    () => {
+    selectedSquare = null;
+    gameOver = false;
 
-        game.reset();
+    drawBoard();
+    updateHistory();
 
-        selectedSquare = null;
+    status.textContent = "YOUR MOVE";
+});
 
-        thinking = false;
+resign.addEventListener("click", () => {
 
-        createBoard();
+    if (gameOver) return;
 
-        updateHistory();
+    gameOver = true;
 
-        statusElement.textContent =
-            "YOUR MOVE";
+    status.textContent =
+        "👑 MAGNUS WINS — YOU RESIGNED";
+});
 
-        engine.postMessage("ucinewgame");
-
-    }
-);
-
-
-/* ================================
-   RESIGN
-================================ */
-
-resignButton.addEventListener(
-    "click",
-    () => {
-
-        if (game.isGameOver()) return;
-
-        thinking = false;
-
-        statusElement.textContent =
-            "👑 MAGNUS WINS — YOU RESIGNED";
-
-    }
-);
-
-
-/* ================================
-   START
-================================ */
-
-createBoard();
-
+drawBoard();
 updateHistory();
-
-statusElement.textContent =
-    "YOUR MOVE";
