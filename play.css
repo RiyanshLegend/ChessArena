@@ -1,143 +1,314 @@
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Poppins,sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-body{
-
-height:100vh;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-background:#050816;
-
-overflow:hidden;
-
-color:white;
-
+:root {
+    --bg: #070b16;
+    --panel: #101827;
+    --panel-light: #172235;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --blue: #3b82f6;
+    --blue-light: #60a5fa;
+    --gold: #facc15;
+    --green: #22c55e;
+    --danger: #ef4444;
 }
 
-.background{
-
-position:fixed;
-
-width:100%;
-
-height:100%;
-
-background:
-radial-gradient(circle at top,#19335a,#050816 70%);
-
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(59, 130, 246, 0.18), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(250, 204, 21, 0.10), transparent 30%),
+        var(--bg);
+    color: var(--text);
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
 }
 
-.card{
+/* =========================
+   TOP BAR
+========================= */
 
-position:relative;
+.topbar {
+    height: 75px;
+    padding: 0 35px;
 
-z-index:5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-width:420px;
+    background: rgba(10, 16, 30, 0.85);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 
-padding:40px;
-
-text-align:center;
-
-border-radius:20px;
-
-background:rgba(255,255,255,.08);
-
-backdrop-filter:blur(15px);
-
-border:1px solid rgba(255,255,255,.15);
-
-box-shadow:0 0 40px rgba(0,150,255,.2);
-
-animation:float 3s ease-in-out infinite;
-
+    backdrop-filter: blur(15px);
 }
 
-.avatar{
-
-font-size:80px;
-
-margin-bottom:20px;
-
+.logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1px;
 }
 
-h1{
-
-font-size:42px;
-
-margin-bottom:10px;
-
+.opponent {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.rating{
-
-color:gold;
-
-font-size:24px;
-
-margin-bottom:15px;
-
+.crown {
+    font-size: 35px;
 }
 
-h2{
-
-margin-bottom:10px;
-
+.opponent strong {
+    display: block;
+    font-size: 15px;
 }
 
-blockquote{
-
-opacity:.8;
-
-margin:20px;
-
-font-style:italic;
-
+.opponent small {
+    color: var(--muted);
+    font-size: 12px;
 }
 
-button{
+/* =========================
+   MAIN GAME
+========================= */
 
-padding:18px 50px;
+.game-container {
+    width: min(1250px, 95%);
+    margin: 40px auto;
 
-font-size:20px;
+    display: grid;
+    grid-template-columns: minmax(500px, 720px) 330px;
+    gap: 35px;
 
-border:none;
-
-border-radius:12px;
-
-cursor:pointer;
-
-background:#2563eb;
-
-color:white;
-
-transition:.3s;
-
+    align-items: start;
 }
 
-button:hover{
+/* =========================
+   BOARD SECTION
+========================= */
 
-transform:scale(1.05);
-
-background:#3b82f6;
-
-box-shadow:0 0 30px #3b82f6;
-
+.board-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-@keyframes float{
+.status {
+    width: 100%;
+    max-width: 720px;
 
-0%{transform:translateY(0);}
-50%{transform:translateY(-10px);}
-100%{transform:translateY(0);}
+    padding: 14px;
 
+    margin-bottom: 15px;
+
+    text-align: center;
+
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    color: var(--blue-light);
+
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* =========================
+   CHESSBOARD
+========================= */
+
+#board {
+    width: min(720px, 90vw);
+    aspect-ratio: 1 / 1;
+
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+
+    border-radius: 10px;
+    overflow: hidden;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        0 0 40px rgba(59, 130, 246, 0.12);
+
+    user-select: none;
+}
+
+/* =========================
+   GAME PANEL
+========================= */
+
+.game-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.boss-card {
+    padding: 25px;
+
+    text-align: center;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(250, 204, 21, 0.12),
+            rgba(255, 255, 255, 0.04)
+        );
+
+    border: 1px solid rgba(250, 204, 21, 0.22);
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.boss-icon {
+    font-size: 65px;
+
+    filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.5));
+}
+
+.boss-card h1 {
+    margin-top: 8px;
+    font-size: 27px;
+}
+
+.rating {
+    margin-top: 5px;
+
+    color: var(--gold);
+
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.perfect {
+    display: inline-block;
+
+    margin-top: 12px;
+    padding: 7px 12px;
+
+    border-radius: 999px;
+
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--green);
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.boss-card p {
+    margin-top: 18px;
+
+    color: var(--muted);
+
+    font-style: italic;
+}
+
+/* =========================
+   MOVE HISTORY
+========================= */
+
+.moves {
+    min-height: 260px;
+
+    padding: 20px;
+
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.045);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.moves h2 {
+    font-size: 14px;
+    letter-spacing: 1px;
+
+    color: var(--muted);
+
+    margin-bottom: 15px;
+}
+
+#moveHistory {
+    color: var(--text);
+
+    line-height: 1.9;
+
+    max-height: 190px;
+    overflow-y: auto;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+button {
+    width: 100%;
+
+    padding: 15px;
+
+    border: none;
+    border-radius: 12px;
+
+    font-size: 15px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+#newGame {
+    background: var(--blue);
+    color: white;
+}
+
+#newGame:hover {
+    background: var(--blue-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+#resign {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+#resign:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 950px) {
+
+    .game-container {
+        grid-template-columns: 1fr;
+        width: 94%;
+    }
+
+    .game-panel {
+        width: min(720px, 90vw);
+        margin: auto;
+    }
+
+    .topbar {
+        padding: 0 18px;
+    }
+
+    .logo {
+        font-size: 17px;
+    }
 }
