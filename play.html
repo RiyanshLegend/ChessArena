@@ -1,41 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Arena - AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="play.css">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <title>Chess Arena | Magnus AI</title>
+
+    <link rel="stylesheet" href="play.css">
 </head>
 
 <body>
 
-<div class="background"></div>
+    <header class="topbar">
+        <div class="logo">♟ CHESS ARENA</div>
 
-<div class="card">
+        <div class="opponent">
+            <span class="crown">👑</span>
 
-<div class="avatar">👑</div>
+            <div>
+                <strong>MAGNUS AI</strong>
+                <small>Rating 4000 • PERFECT</small>
+            </div>
+        </div>
+    </header>
 
-<h1>MAGNUS AI</h1>
 
-<div class="rating">★★★★★★★★★★★★</div>
+    <main class="game-container">
 
-<h2>Rating: 4000</h2>
+        <section class="board-section">
 
-<p>Status: PERFECT</p>
+            <div class="status" id="status">
+                YOUR MOVE
+            </div>
 
-<blockquote>
-"The board belongs to me."
-</blockquote>
+            <div id="board"></div>
 
-<button id="challengeBtn">
-CHALLENGE
-</button>
+        </section>
 
-</div>
 
-<script src="play.js"></script>
+        <aside class="game-panel">
+
+            <div class="boss-card">
+
+                <div class="boss-icon">👑</div>
+
+                <h1>MAGNUS AI</h1>
+
+                <div class="rating">4000</div>
+
+                <div class="perfect">
+                    ⚡ PERFECT
+                </div>
+
+                <p>
+                    "The board belongs to me."
+                </p>
+
+            </div>
+
+
+            <div class="moves">
+
+                <h2>MOVE HISTORY</h2>
+
+                <div id="moveHistory">
+                    No moves yet.
+                </div>
+
+            </div>
+
+
+            <button id="newGame">
+                NEW GAME
+            </button>
+
+            <button id="resign">
+                RESIGN
+            </button>
+
+        </aside>
+
+    </main>
+
+
+    <!-- Chess.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+    <!-- Magnus / Stockfish -->
+    <script src="stockfish-18-lite-single.js"></script>
+
+    <!-- Our game -->
+    <script src="play.js"></script>
 
 </body>
 </html>
